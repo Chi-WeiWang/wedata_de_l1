@@ -36,9 +36,11 @@ def log(str):
 # prepare RDD with dictionard format
 def fmt_data(msg_dict):
     if msg_dict is not None:
-        rowkey = str(msg_dict['module'])+'-'+msg_dict['date']
+        # rowkey = str(msg_dict['module'])+'-'+msg_dict['date']
+        rowkey = msg_dict[0]
         put_list = []
-        for k, v in msg_dict.items():
+        # for k, v in msg_dict.items():
+        for k, v in msg_dict[1].items():
             col_name = k
             col_value = str(v)
             col_family = 'blog'
@@ -46,13 +48,14 @@ def fmt_data(msg_dict):
             msg_tuple = (rowkey, [rowkey, col_family, col_name, col_value])
             print("rowkey:" + rowkey + "\ndata " + str(msg_tuple) + " append success")
             put_list.append(msg_tuple)
-        return put_list
+    return put_list
  
 #transfer RDD to HBASE
 def connectAndWrite(data):
     if not data.isEmpty():
         # deserialize json in RDD (None,[json]) to dictionary
-        msg_list = data.map(lambda x: json.loads(x[1]))
+        # msg_list = data.map(lambda x: json.loads(x[1]))
+        msg_list = data.map(lambda x: (x[0], json.loads(x[1])))
         # log for check
         log(msg_list.collect())
         try:
